@@ -12,7 +12,7 @@
               <a href="#" class="nav-link">FIND A PET</a>
             </li>
             <li class="nav-item">
-              <a href="#" class="nav-link">ALL ABOUT PETS</a>
+              <a href="#" class="nav-link">SHARING WITH US</a>
             </li>
             <li class="nav-item">
               <a href="#" class="nav-link issue-link">
@@ -120,7 +120,7 @@ const buttons = ref([
   { id: 'dog', text: 'Dogs', primary: false },
   { id: 'cat', text: 'Cats', primary: false },
   { id: 'other-animal', text: 'Other Animals', primary: false },
-  { id: 'shelter', text: 'Shelters & Rescues', primary: true }
+ 
 ])
 
 // 搜索
