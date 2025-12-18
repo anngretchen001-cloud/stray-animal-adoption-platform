@@ -10,7 +10,7 @@
           <router-link to="/" class="nav-link">FIND A PET</router-link>
         </li>
         <li class="nav-item">
-          <router-link to="/" class="nav-link">ALL ABOUT PETS</router-link>
+          <router-link to="/" class="nav-link">SHARING WITH US</router-link>
         </li>
         <li class="nav-item">
           <a href="#" class="nav-link issue-link">
