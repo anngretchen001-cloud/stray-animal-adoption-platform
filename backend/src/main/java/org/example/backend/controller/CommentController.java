@@ -1,14 +1,12 @@
 package org.example.backend.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import jakarta.servlet.http.HttpServletRequest;
-import org.example.backend.common.R;
+import org.example.backend.dto.CommentDTO;
 import org.example.backend.entity.Comment;
 import org.example.backend.service.CommentService;
+import org.example.backend.common.R;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/comments")
@@ -20,56 +18,41 @@ public class CommentController {
         this.commentService = commentService;
     }
 
-    /** 添加评论 */
-    @PostMapping
-    public R<?> addComment(@RequestBody Comment comment, HttpServletRequest request) {
-
-        Long UserId = Long.parseLong(request.getParameter("userId"));
-
-        comment.setUserId(UserId);
-
-        commentService.save(comment);
-        return R.ok("评论成功");
-    }
-
-    /** 删除评论 */
-    @DeleteMapping("/{id}")
-    public R<?> deleteComment(@PathVariable Long id) {
-        commentService.removeById(id);
-        return R.ok("删除成功");
-    }
-
-    /** 根据文章ID查询评论列表 */
-    @GetMapping("/post/{postId}")
-    public R<List<Comment>> getCommentsByPost(@PathVariable Long postId) {
-        List<Comment> comments = commentService.list(
-                new LambdaQueryWrapper<Comment>()
-                        .eq(Comment::getPostId, postId)
-                        .orderByAsc(Comment::getCreatedAt)
-        );
-        return R.ok(comments);
-    }
-
-    /** 查询单条评论 */
-    @GetMapping("/{id}")
-    public R<Comment> getComment(@PathVariable Long id) {
-        Comment comment = commentService.getById(id);
-        return R.ok(comment);
-    }
-
-    /** 分页查询评论（可选，前端分页用） */
-    @GetMapping("/post/{postId}/page")
-    public R<Page<Comment>> getCommentsByPostPage(
-            @PathVariable Long postId,
-            @RequestParam(defaultValue = "1") long current,
-            @RequestParam(defaultValue = "10") long size) {
-
-        Page<Comment> page = commentService.page(
-                new Page<>(current, size),
-                new LambdaQueryWrapper<Comment>()
-                        .eq(Comment::getPostId, postId)
-                        .orderByAsc(Comment::getCreatedAt)
-        );
+    /** 分页获取某篇文章的评论 */
+    @GetMapping("/page")
+    public R<IPage<CommentDTO>> pageComments(
+            @RequestParam Long postId,
+            @RequestParam Integer pageNum,
+            @RequestParam Integer pageSize
+    ) {
+        IPage<CommentDTO> page = commentService.pageCommentsByPostId(postId, pageNum, pageSize);
         return R.ok(page);
     }
+
+    /** 发布评论 */
+    @PostMapping
+    public R<Void> createComment(@RequestBody Comment comment, HttpServletRequest request) {
+        commentService.createComment(comment, request);
+        return R.okMsg("发布成功");
+    }
+    /** 删除评论 */
+    @DeleteMapping("/{id}")
+    public R<Void> deleteComment(@PathVariable Long id, HttpServletRequest request) {
+        Comment comment = commentService.getById(id);
+        if (comment == null) {
+            return R.error("评论不存在");
+        }
+
+        // 从请求中取当前用户ID
+        Long currentUserId = (Long) request.getAttribute("userId");
+
+        // 权限判断：仅评论作者可以删除
+        if (!comment.getUserId().equals(currentUserId)) {
+            return R.error("无权限删除该评论");
+        }
+
+        commentService.removeById(id);
+        return R.okMsg("删除成功");
+    }
+
 }

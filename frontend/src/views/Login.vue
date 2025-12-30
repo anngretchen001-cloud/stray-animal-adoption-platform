@@ -71,6 +71,7 @@ async function handleLogin() {
     userStore.setRole(userInfo.role)
     userStore.setUsername(userInfo.username)
     userStore.setAvatar(userInfo.avatarUrl || '')
+    userStore.setUserId(userInfo.id)
     console.log("login response:", res)
     console.log("role:", userInfo.role)
 

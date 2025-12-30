@@ -10,7 +10,7 @@
           <router-link to="/" class="nav-link">FIND A PET</router-link>
         </li>
         <li class="nav-item">
-          <router-link to="/" class="nav-link">SHARING WITH US</router-link>
+          <router-link to="/sharing" class="nav-link">SHARING WITH US</router-link>
         </li>
         <li class="nav-item">
           <a href="#" class="nav-link issue-link">
@@ -77,7 +77,7 @@ function logout() {
 </script>
 
 <style scoped>
-/* 直接复用你的样式 */
+
 .navbar {
   display: flex;
   justify-content: space-between;

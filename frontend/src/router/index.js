@@ -23,6 +23,13 @@ const routes = [
   { path: '/profile', component: () => import('@/views/Profile.vue'), meta: { requiresAuth: true } },
   { path: '/organization', component: () => import('@/views/Organization_back.vue'), meta: { requiresRole: ['ORG'] } },
   { path: '/admin', component: () => import('@/views/Admin_back.vue'), meta: { requiresRole: ['ADMIN'] } },
+  {path:'/sharing',component: () => import('@/views/Sharing.vue')},
+  {
+  path: '/community/:id',
+  name: 'PostDetail',
+  component: () => import('@/views/PostDetail.vue')
+}
+
 ]
 
 const router = createRouter({

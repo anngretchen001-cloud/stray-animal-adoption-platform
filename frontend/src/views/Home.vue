@@ -12,7 +12,7 @@
               <a href="#" class="nav-link">FIND A PET</a>
             </li>
             <li class="nav-item">
-              <a href="#" class="nav-link">SHARING WITH US</a>
+              <a href="#" class="nav-link" @click="goSharing">SHARING WITH US</a>
             </li>
             <li class="nav-item">
               <a href="#" class="nav-link issue-link">
@@ -148,6 +148,9 @@ function handleButtonClick(type) {
     path: '/animals',
     query: { type }  // dogs / cats / other
   })
+}
+function goSharing() {
+  router.push('/sharing')
 }
 
 
