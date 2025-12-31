@@ -46,7 +46,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
     }
 
     @Override
-    public IPage<PostDTO> pagePostsDTO(Integer pageNum, Integer pageSize, String keyword, String type) {
+    public IPage<PostDTO> pagePostsDTO(Integer pageNum, Integer pageSize, String keyword, String type,Long userId) {
         Page<Post> page = new Page<>(pageNum, pageSize);
         QueryWrapper<Post> qw = new QueryWrapper<>();
         qw.eq("status", "NORMAL");
@@ -57,6 +57,10 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
         if (type != null && !type.isEmpty()) {
             qw.eq("type", type);
         }
+        if (userId != null) {
+            qw.eq("author_id", userId);
+        }
+
         qw.orderByDesc("created_at");
 
         IPage<Post> postPage = this.page(page, qw);

@@ -1,4 +1,4 @@
-<template> 
+<template>
   <NavBar />
 
   <div class="community-page">
@@ -38,7 +38,7 @@
       <div class="toolbar">
         <el-input
           v-model="keyword"
-          placeholder="搜索文章标题"
+          placeholder="搜索我发布的文章"
           clearable
           :prefix-icon="Search"
           @keyup.enter="fetchPosts"
@@ -63,7 +63,7 @@
 
       <el-empty
         v-else-if="!posts || posts.length === 0"
-        description="暂无文章"
+        description="你还没有发布过文章"
       />
 
       <el-row v-else :gutter="20">
@@ -90,10 +90,10 @@
               <h3 class="title">{{ post.title }}</h3>
               <div class="meta">
                 <el-avatar
-                  :size="'small'"
+                  size="small"
                   :src="post.authorAvatar || defaultAuthImg"
                 />
-                <span class="author">{{ post.authorName || '匿名' }}</span>
+                <span class="author">{{ post.authorName || '我' }}</span>
                 <span class="views">👁 {{ post.viewCount || 0 }}</span>
               </div>
             </div>
@@ -107,14 +107,16 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/user'
 import NavBar from '@/components/NavBar.vue'
 import { pagePosts } from '@/api/post'
 import { Search, Promotion, Edit, Bell } from '@element-plus/icons-vue'
 
 const router = useRouter()
+const userStore = useUserStore()
 
 /* 左侧导航 */
-const activeMenu = ref('1')
+const activeMenu = ref('3')
 const go = (path) => router.push(path)
 
 /* 查询条件 */
@@ -123,7 +125,7 @@ const type = ref('')
 const pageNum = ref(1)
 const pageSize = ref(12)
 
-/* 分类（对齐后端枚举） */
+/* 分类 */
 const categories = [
   { label: '全部', value: '' },
   { label: '公告', value: 'ANNOUNCEMENT' },
@@ -136,7 +138,7 @@ const categories = [
 const loading = ref(false)
 const posts = ref([])
 const defaultImg = '/default-pet.jpg'
-const defaultAuthImg='/default-avatar.jpg'
+const defaultAuthImg = '/default-avatar.jpg'
 
 const changeType = (val) => {
   type.value = val
@@ -151,9 +153,10 @@ const fetchPosts = async () => {
       pageNum: pageNum.value,
       pageSize: pageSize.value,
       keyword: keyword.value,
-      type: type.value
+      type: type.value,
+      userId: userStore.userId// ⭐ 关键：只查当前用户的
     })
-    posts.value = page.records || []  // 直接拿 DTO 的 records
+    posts.value = page.records || []
   } catch (err) {
     console.error(err)
     posts.value = []

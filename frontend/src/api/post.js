@@ -7,19 +7,22 @@ import api from './index'
  * @param {number} params.pageSize
  * @param {string} params.keyword  标题关键字（可选）
  * @param {string} params.type     分类类型（可选）
+ * @param {long} params.userId   用户ID（可选，查询某用户的文章）
  */
 export function pagePosts({
   pageNum = 1,
   pageSize = 10,
   keyword = '',
-  type = ''
+  type = '',
+  userId = null 
 } = {}) {
   return api.get('/posts/page', {
     params: {
       pageNum,
       pageSize,
       keyword,
-      type
+      type,
+        userId
     }
   }).then(res => res.data.data) // 取data.data
 }

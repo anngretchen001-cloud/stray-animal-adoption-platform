@@ -28,6 +28,25 @@ const routes = [
   path: '/community/:id',
   name: 'PostDetail',
   component: () => import('@/views/PostDetail.vue')
+  },
+  // router/index.js
+{
+  path: '/community/publish',
+  name: 'Publish',
+  component: () => import('@/views/Publish.vue'),
+  meta: { requiresAuth: true } // 需要登录
+},
+// router/index.js
+{
+  path: '/community/edit/:id',
+  name: 'EditPost',
+  component: () => import('@/views/Publish.vue'),  // 复用同一个组件
+  meta: { requiresAuth: true }
+},
+{
+  path:'/community/mypost',
+  component: () => import('@/views/MyPost.vue'),
+  meta: { requiresAuth: true }
 }
 
 ]

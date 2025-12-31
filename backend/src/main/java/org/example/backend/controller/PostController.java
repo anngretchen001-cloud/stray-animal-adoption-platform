@@ -41,9 +41,10 @@ public class PostController {
             @RequestParam Integer pageNum,
             @RequestParam Integer pageSize,
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) String type
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) Long userId
     ) {
-        IPage<PostDTO> page = postService.pagePostsDTO(pageNum, pageSize, keyword, type);
+        IPage<PostDTO> page = postService.pagePostsDTO(pageNum, pageSize, keyword, type,userId);
         return R.ok(page);
     }
 

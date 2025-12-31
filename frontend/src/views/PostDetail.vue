@@ -3,7 +3,30 @@
     <NavBar />
 
     <div class="post-container" v-if="post">
-      <h1>{{ post.title }}</h1>
+      <!-- 文章标题和操作按钮 -->
+      <div class="post-header">
+        <h1>{{ post.title }}</h1>
+        <div v-if="Number(post.authorId) === Number(userStore.userId)" class="post-actions">
+          <!-- 编辑按钮 -->
+          <button
+            @click="handleEdit"
+            class="edit-btn"
+          >
+            <i class="el-icon-edit"></i>
+            <span>编辑</span>
+          </button>
+          
+          <!-- 删除按钮 -->
+          <button
+            @click="handleDeletePost"
+            class="delete-post-btn"
+          >
+            <i class="el-icon-delete"></i>
+            <span>删除</span>
+          </button>
+        </div>
+      </div>
+
       <div class="meta">
         <el-avatar :size="'small'" :src="getImageUrl(post.authorAvatar)" @error="handleAvatarError" />
         <span class="author-name">{{ post.authorName || '匿名用户' }}</span>
@@ -96,7 +119,7 @@
               <!-- 修改后的删除按钮 -->
               <button
                 v-if="Number(comment.userId) === Number(userStore.userId)"
-                @click="handleDelete(comment.id)"
+                @click="handleDeleteComment(comment.id)"
                 class="custom-delete-btn"
                 >
                 <i class="el-icon-delete"></i>
@@ -126,15 +149,16 @@
 
 <script setup>
 import { ref, onMounted, nextTick } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import NavBar from '@/components/NavBar.vue'
-import { getPost } from '@/api/post'
+import { getPost, updatePost, deletePost } from '@/api/post'
 import { pageComments, createComment, deleteComment } from '@/api/comment'
 import { useUserStore } from '@/stores/user'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
-const userStore = useUserStore()
+const router = useRouter()
 const route = useRoute()
+const userStore = useUserStore()
 const post = ref(null)
 
 // 修复：正确的默认图片路径
@@ -265,7 +289,8 @@ const submitComment = async () => {
   }
 }
 
-const handleDelete = async (id) => {
+// 删除评论
+const handleDeleteComment = async (id) => {
   try {
     await ElMessageBox.confirm('确定删除这条评论吗？', '提示', {
       confirmButtonText: '确定',
@@ -279,7 +304,39 @@ const handleDelete = async (id) => {
     comments.value = comments.value.filter(c => c.id !== id)
     totalComments.value = Math.max(0, totalComments.value - 1)
     
-    ElMessage.success('删除成功')
+    ElMessage.success('评论删除成功')
+  } catch (err) {
+    if (err !== 'cancel') {
+      console.error(err)
+      ElMessage.error('删除失败')
+    }
+  }
+}
+
+const handleEdit = () => {
+  router.push(`/community/edit/${post.value.id}`)
+}
+
+// 删除文章
+const handleDeletePost = async () => {
+  try {
+    await ElMessageBox.confirm('确定删除这篇文章吗？删除后无法恢复', '警告', {
+      confirmButtonText: '确定删除',
+      cancelButtonText: '取消',
+      type: 'error',
+      confirmButtonClass: 'el-button--danger',
+      customClass: 'delete-post-dialog',
+      center: true
+    })
+    
+    await deletePost(post.value.id)
+    ElMessage.success('文章删除成功')
+    
+    // 删除成功后跳转回文章列表
+    setTimeout(() => {
+      router.push('/sharing')
+    }, 1000)
+    
   } catch (err) {
     if (err !== 'cancel') {
       console.error(err)
@@ -358,14 +415,114 @@ onMounted(fetchPost)
   border-radius: 20px 20px 0 0;
 }
 
-h1 {
-  font-size: 28px;
-  font-weight: 700;
+/* 文章头部样式 */
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 20px;
-  color: #5e35b1;
-  line-height: 1.4;
   padding-bottom: 16px;
   border-bottom: 2px solid #f3e5f5;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.post-header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #5e35b1;
+  line-height: 1.4;
+  margin: 0;
+  padding: 0;
+  border: none;
+  flex: 1;
+  min-width: 0; /* 防止标题过长挤压按钮 */
+  word-break: break-word;
+}
+
+/* 文章操作按钮容器 */
+.post-actions {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+/* 编辑按钮样式 */
+.edit-btn {
+  padding: 6px 16px;
+  height: 32px;
+  font-size: 12px;
+  border-radius: 6px;
+  border: 1px solid #b3d8ff;
+  background: linear-gradient(to right, #ecf5ff, #ecf5ff);
+  color: #409eff;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 2px 4px rgba(64, 158, 255, 0.1);
+  min-width: 60px;
+  justify-content: center;
+  cursor: pointer;
+  font-family: inherit;
+  outline: none;
+}
+
+.edit-btn i {
+  font-size: 12px;
+  margin-right: 4px;
+}
+
+.edit-btn:hover {
+  background: linear-gradient(to right, #d9ecff, #d9ecff);
+  border-color: #409eff;
+  color: #337ecc;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(64, 158, 255, 0.15);
+}
+
+.edit-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(64, 158, 255, 0.1);
+}
+
+/* 文章删除按钮样式 */
+.delete-post-btn {
+  padding: 6px 16px;
+  height: 32px;
+  font-size: 12px;
+  border-radius: 6px;
+  border: 1px solid #ffcdd2;
+  background: linear-gradient(to right, #fff, #fff);
+  color: #f44336;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 2px 4px rgba(244, 67, 54, 0.1);
+  min-width: 60px;
+  justify-content: center;
+  cursor: pointer;
+  font-family: inherit;
+  outline: none;
+}
+
+.delete-post-btn i {
+  font-size: 12px;
+  margin-right: 4px;
+}
+
+.delete-post-btn:hover {
+  background: linear-gradient(to right, #ffebee, #ffebee);
+  border-color: #f44336;
+  color: #d32f2f;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(244, 67, 54, 0.15);
+}
+
+.delete-post-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(244, 67, 54, 0.1);
 }
 
 .meta {
@@ -661,8 +818,8 @@ h1 {
   font-size: 10px;
 }
 
-/* 修改后的删除按钮样式 */
-.delete-btn {
+/* 评论删除按钮样式 */
+.custom-delete-btn {
   padding: 6px 16px;
   height: 32px;
   font-size: 12px;
@@ -677,14 +834,17 @@ h1 {
   box-shadow: 0 2px 4px rgba(244, 67, 54, 0.1);
   min-width: 60px;
   justify-content: center;
+  cursor: pointer;
+  font-family: inherit;
+  outline: none;
 }
 
-.delete-btn i {
+.custom-delete-btn i {
   font-size: 12px;
   margin-right: 4px;
 }
 
-.delete-btn:hover {
+.custom-delete-btn:hover {
   background: linear-gradient(to right, #ffebee, #ffebee);
   border-color: #f44336;
   color: #d32f2f;
@@ -692,7 +852,7 @@ h1 {
   box-shadow: 0 4px 8px rgba(244, 67, 54, 0.15);
 }
 
-.delete-btn:active {
+.custom-delete-btn:active {
   transform: translateY(0);
   box-shadow: 0 2px 4px rgba(244, 67, 54, 0.1);
 }
@@ -766,8 +926,19 @@ h1 {
     border-radius: 16px;
   }
   
-  h1 {
+  .post-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .post-header h1 {
     font-size: 22px;
+    width: 100%;
+  }
+  
+  .post-actions {
+    align-self: flex-end;
   }
   
   .meta {
@@ -793,7 +964,7 @@ h1 {
     gap: 8px;
   }
   
-  .delete-btn {
+  .custom-delete-btn {
     align-self: flex-end;
   }
   
@@ -807,6 +978,13 @@ h1 {
   
   .submit-btn {
     width: 100%;
+  }
+  
+  .edit-btn,
+  .delete-post-btn,
+  .custom-delete-btn {
+    padding: 4px 12px;
+    font-size: 11px;
   }
 }
 
@@ -823,22 +1001,24 @@ h1 {
     max-height: 250px;
   }
   
-  .delete-btn {
-    padding: 4px 12px;
-    font-size: 11px;
+  .post-actions {
+    width: 100%;
+    justify-content: flex-end;
   }
 }
 </style>
 
 <style>
 /* 全局的删除确认对话框样式 */
-.delete-confirm-dialog .el-message-box__header {
+.delete-confirm-dialog .el-message-box__header,
+.delete-post-dialog .el-message-box__header {
   background: linear-gradient(135deg, #7e57c2, #9575cd);
   padding: 16px 20px;
   border-radius: 8px 8px 0 0;
 }
 
-.delete-confirm-dialog .el-message-box__title {
+.delete-confirm-dialog .el-message-box__title,
+.delete-post-dialog .el-message-box__title {
   color: white;
   font-weight: 600;
 }
@@ -848,12 +1028,20 @@ h1 {
   color: #5e35b1;
 }
 
-.delete-confirm-dialog .el-message-box__btns {
+.delete-post-dialog .el-message-box__content {
+  padding: 20px;
+  color: #d32f2f;
+  font-weight: 500;
+}
+
+.delete-confirm-dialog .el-message-box__btns,
+.delete-post-dialog .el-message-box__btns {
   padding: 16px 20px 20px;
   border-top: 1px solid #f3e5f5;
 }
 
-.delete-confirm-dialog .el-button--danger {
+.delete-confirm-dialog .el-button--danger,
+.delete-post-dialog .el-button--danger {
   background: linear-gradient(135deg, #f44336, #ef5350);
   border: none;
   border-radius: 6px;
@@ -861,9 +1049,9 @@ h1 {
   transition: all 0.3s;
 }
 
-.delete-confirm-dialog .el-button--danger:hover {
+.delete-confirm-dialog .el-button--danger:hover,
+.delete-post-dialog .el-button--danger:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
 }
-
 </style>

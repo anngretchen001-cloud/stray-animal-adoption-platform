@@ -10,7 +10,7 @@ public interface PostService extends IService<Post> {
     /** 发布文章 */
     void createPost(Post post, String currentUserRole);
 
-    IPage<PostDTO> pagePostsDTO(Integer pageNum, Integer pageSize, String keyword, String type);
+    IPage<PostDTO> pagePostsDTO(Integer pageNum, Integer pageSize, String keyword, String type, Long userId);
     PostDTO getPostDetail(Long postId);
 
 }
