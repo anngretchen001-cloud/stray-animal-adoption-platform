@@ -421,7 +421,7 @@ const handleSubmit = async () => {
       title: form.title.trim(),
       content: form.content.trim(),
       type: form.type,
-      coverUrl: form.coverUrl
+      coverUrl: form.coverUrl?.data || '' 
     }
     
     if (isEditMode.value) {
